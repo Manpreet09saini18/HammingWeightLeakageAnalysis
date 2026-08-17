@@ -1,0 +1,12 @@
+========== SVM Training ==========
+Training Samples : 10000
+Attack Samples   : 10000
+Selected Features: 50
+Kernel           : RBF
+C                : 10
+Gamma            : scale
+Probability      : True
+Training Time    : 95.62 sec
+
+HW Classes:
+[0 1 2 3 4 5 6 7 8]

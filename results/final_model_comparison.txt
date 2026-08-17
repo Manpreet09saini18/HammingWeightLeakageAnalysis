@@ -1,0 +1,146 @@
+============================================================
+HAMMING WEIGHT LEAKAGE ANALYSIS
+FINAL MODEL COMPARISON
+============================================================
+
+Dataset
+------------------------------------------------------------
+Dataset              : ASCAD
+Profiling Traces     : 50,000
+Attack Traces        : 10,000
+Selected Features    : 50
+Target Byte          : 2
+Correct Key Byte     : 224
+
+
+============================================================
+1. RANDOM FOREST
+============================================================
+
+Model                 : Random Forest
+Number of Trees       : 300
+Maximum Depth         : 20
+Attack Traces         : 10,000
+
+Classification Accuracy
+------------------------------------------------------------
+Accuracy              : 27.54%
+
+Key Ranking
+------------------------------------------------------------
+Correct Key           : 224
+Best Key Rank         : 1
+Final Key Rank        : 1
+First Rank-1 Point    : 9,800 traces
+
+Success Rate
+------------------------------------------------------------
+Success Rate          : 2.00%
+Successful Points     : 2
+
+Interpretation
+------------------------------------------------------------
+The Random Forest model was able to improve the correct-key
+ranking from a relatively high rank at lower trace counts to
+rank 1 at 9,800 traces. The correct key remained at rank 1 at
+10,000 traces.
+
+
+============================================================
+2. SUPPORT VECTOR MACHINE
+============================================================
+
+Model                 : SVM
+Kernel                : RBF
+C                     : 10
+Training Samples      : 10,000
+Selected Features     : 50
+Attack Traces         : 10,000
+
+Key Ranking
+------------------------------------------------------------
+Correct Key           : 224
+Best Key Rank         : 67
+Final Key Rank        : 224
+
+Success Rate
+------------------------------------------------------------
+Success Rate          : 0.00%
+Successful Points     : 0
+
+Interpretation
+------------------------------------------------------------
+The SVM model did not recover the correct key within the tested
+10,000 attack traces. Its best observed key rank was 67, while
+the final rank at 10,000 traces was 224.
+
+
+============================================================
+3. FINAL COMPARISON
+============================================================
+
+Metric                  Random Forest       SVM
+------------------------------------------------------------
+Model                    RF                  SVM
+Features                 50                  50
+Training Samples         50,000              10,000
+Attack Traces            10,000              10,000
+Accuracy                 27.54%              Not calculated
+Best Key Rank            1                   67
+Final Key Rank           1                   224
+Success Rate             2.00%               0.00%
+Correct Key              224                 224
+
+
+============================================================
+FINAL CONCLUSION
+============================================================
+
+Among the two evaluated machine-learning approaches, the
+Random Forest model produced the stronger side-channel attack
+result.
+
+The tuned Random Forest configuration used 300 trees and a
+maximum depth of 20 and achieved 27.54% Hamming Weight
+classification accuracy.
+
+More importantly, the key-ranking analysis recovered the
+correct AES key byte (224) at rank 1 using the attack traces.
+The first rank-1 result occurred at 9,800 traces, and the final
+rank at 10,000 traces was also 1.
+
+The Random Forest success rate was 2.00%, with 2 successful
+trace checkpoints.
+
+The SVM model achieved a best key rank of 67 but ended at rank
+224 after 10,000 traces, resulting in a 0.00% success rate.
+
+Therefore, for this experiment, Random Forest performed better
+than SVM for AES key-ranking and side-channel leakage analysis.
+
+
+============================================================
+IMPORTANT FILES
+============================================================
+
+Random Forest Model
+models\best_random_forest_tuned.pkl
+
+Random Forest Tuning
+results\random_forest_tuning_results.csv
+
+Random Forest Key Ranks
+results\key_ranks.npy
+
+Random Forest Success Rate
+results\success_rate.npy
+
+SVM Model
+models\svm_model.pkl
+
+SVM Key Ranking
+results\svm_key_ranking_final.txt
+
+SVM Success Rate
+results\svm_success_rate_final.txt
+============================================================

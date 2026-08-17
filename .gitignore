@@ -1,0 +1,16 @@
+# Virtual environment
+venv/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Dataset - don't upload large dataset files
+dataset/
+*.h5
+
+# Trained models - too large for GitHub
+models/*.pkl
+
+# Old/temporary result
+results/key_scores.npy

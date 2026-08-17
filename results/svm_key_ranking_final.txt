@@ -1,0 +1,19 @@
+========== SVM AES KEY RANKING ==========
+
+Target byte      : 2
+Correct key      : 224
+Final key rank   : 224
+Traces used      : 10000
+
+Top 10 Candidates
+------------------------------
+Rank   1 | Key  67 | Score -17492.488476
+Rank   2 | Key  28 | Score -17514.713579
+Rank   3 | Key  89 | Score -17520.700043
+Rank   4 | Key 122 | Score -17524.488710
+Rank   5 | Key  68 | Score -17528.614099
+Rank   6 | Key 226 | Score -17531.968957
+Rank   7 | Key  81 | Score -17537.979674
+Rank   8 | Key  39 | Score -17538.233657
+Rank   9 | Key 209 | Score -17538.312200
+Rank  10 | Key 100 | Score -17545.844296
