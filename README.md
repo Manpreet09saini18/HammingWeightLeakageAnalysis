@@ -1,406 +1,196 @@
-*# Hamming Weight Leakage Analysis*
+# Hamming Weight Leakage Analysis
 
+This project uses **Machine Learning to analyze AES power traces** using the **Hamming Weight (HW) leakage model**.
 
+We compare:
 
-*A classical machine-learning approach for analyzing AES side-channel leakage using Hamming Weight classification and key-ranking techniques.*
+* Random Forest
+* SVM
 
+The goal is to use power traces to identify the correct AES key byte.
 
+## Project Flow
 
-*## Overview*
+```text
+ASCAD Dataset
+      ↓
+HW Labels
+      ↓
+SNR Analysis
+      ↓
+Feature Selection
+      ↓
+Random Forest / SVM
+      ↓
+256 Key Guesses
+      ↓
+Key Ranking
+      ↓
+Success Rate
+```
 
+## How to Run
 
+Run commands from:
 
-*This project investigates whether machine-learning models can learn information leaked through AES power-consumption traces.*
+```powershell
+C:\HammingWeightLeakageAnalysis
+```
 
+Make sure `(venv)` is active.
 
+### 1. Create HW labels
 
-*The project uses the \*\*ASCAD dataset\*\* and evaluates two classical machine-learning approaches:*
+```powershell
+python src\save_hw_labels.py
+```
 
+Creates:
 
+```text
+dataset/hw_labels.npy
+```
 
-*\* Random Forest*
+**Purpose:** Creates Hamming Weight labels from the AES data.
 
-*\* Support Vector Machine (SVM)*
+### 2. SNR Analysis
 
+```powershell
+python src\snr.py
+```
 
+Creates:
 
-*The main objective is not only classification accuracy, but also \*\*AES key recovery through key ranking\*\*.*
+```text
+results/snr.npy
+results/snr_plot.png
+```
 
+**Purpose:** Finds useful leakage points in the power traces.
 
+### 3. Select Features
 
-*## Dataset*
+```powershell
+python src\feature_selection.py
+```
 
+Creates:
 
+```text
+results/features.npy
+```
 
-*\* Dataset: ASCAD*
+**Purpose:** Selects the most useful trace points.
 
-*\* Profiling traces: 50,000*
+### 4. Train Random Forest
 
-*\* Attack traces: 10,000*
+```powershell
+python src\train_random_forest.py
+```
 
-*\* Target AES byte: 2*
+Creates the Random Forest model.
 
-*\* Correct key byte: 224*
+**Purpose:** Learns the relationship between power traces and Hamming Weight.
 
-*\* Selected features: 50*
+### 5. Tune Random Forest
 
+```powershell
+python src\tune_random_forest.py
+```
 
+**Purpose:** Tests different Random Forest settings and finds the best one.
 
-*The AES intermediate values are converted into \*\*Hamming Weight classes (0–8)\*\*.*
+Best result in this experiment:
 
+```text
+300 Trees
+Maximum Depth = 20
+Accuracy = 27.54%
+```
 
+### 6. Train SVM
 
-*## Methodology*
+```powershell
+python src\svm_model.py
+```
 
+**Purpose:** Trains the SVM model and produces Hamming Weight probabilities.
 
+### 7. SVM Key Ranking
 
-*```text*
+```powershell
+python src\svm_key_ranking.py
+```
 
-*ASCAD Dataset*
+**Purpose:** Tests all 256 possible AES key bytes and ranks them.
 
-&#x20;     *↓*
+### 8. SVM Success Rate
 
-*Data Preprocessing*
+```powershell
+python src\svm_success_rate.py
+```
 
-&#x20;     *↓*
+**Purpose:** Checks the key rank as more attack traces are used.
 
-*Hamming Weight Labels*
+### 9. Create Graphs
 
-&#x20;     *↓*
+```powershell
+python src\plot_svm_key_ranking.py
+python src\plot_svm_success_rate.py
+```
 
-*SNR Analysis*
+## Important Files
 
-&#x20;     *↓*
+```text
+dataset/ASCAD.h5
+        ↓
+dataset/hw_labels.npy
+        ↓
+results/features.npy
+        ↓
+models/
+        ↓
+results/
+```
 
-*Feature Selection*
+`leakage_model.py` and `attack_utils.py` are **helper files**. Do not run them directly.
 
-&#x20;     *↓*
+## Final Results
 
-*Machine Learning Models*
+### Random Forest
 
-&#x20;  *↙              ↘*
+```text
+Accuracy = 27.54%
+Correct Key = 224
+Best Rank = 1
+Rank 1 at = 9,800 traces
+```
 
-*Random Forest     SVM*
+### SVM
 
-&#x20;  *↓                ↓*
+```text
+Correct Key = 224
+Best Rank = 67
+Final Rank = 224
+Success Rate = 0%
+```
 
-*Predictions      Probabilities*
+### Conclusion
 
-&#x20;  *↓                ↓*
+For this experiment, **Random Forest performed better than SVM for AES key ranking**.
 
-*AES Key Ranking and Evaluation*
+The basic idea is:
 
-&#x20;     *↓*
-
-*Guessing / Success Rate Analysis*
-
-*```*
-
-
-
-*## Random Forest Results*
-
-
-
-*The Random Forest model was tuned using different numbers of trees and maximum depths.*
-
-
-
-*Best configuration:*
-
-
-
-*\* Trees: 300*
-
-*\* Maximum Depth: 20*
-
-*\* Selected Features: 50*
-
-*\* Attack Traces: 10,000*
-
-*\* Hamming Weight Accuracy: \*\*27.54%\*\**
-
-
-
-*### Key Ranking*
-
-
-
-*\* Correct key: \*\*224\*\**
-
-*\* Best key rank: \*\*1\*\**
-
-*\* Final key rank: \*\*1\*\**
-
-*\* First rank-1 result: \*\*9,800 traces\*\**
-
-*\* Final evaluation: \*\*10,000 traces\*\**
-
-
-
-*### Success Rate*
-
-
-
-*\* Success rate: \*\*2.00%\*\**
-
-*\* Successful checkpoints: \*\*2\*\**
-
-
-
-*The Random Forest model successfully ranked the correct AES key byte first during the attack analysis.*
-
-
-
-*## SVM Results*
-
-
-
-*The SVM model used an RBF kernel.*
-
-
-
-*Configuration:*
-
-
-
-*\* Kernel: RBF*
-
-*\* C: 10*
-
-*\* Training samples: 10,000*
-
-*\* Selected features: 50*
-
-*\* Attack traces: 10,000*
-
-
-
-*Results:*
-
-
-
-*\* Correct key: \*\*224\*\**
-
-*\* Best key rank: \*\*67\*\**
-
-*\* Final key rank: \*\*224\*\**
-
-*\* Success rate: \*\*0.00%\*\**
-
-
-
-*The SVM did not recover the correct key within the tested attack traces.*
-
-
-
-*## Model Comparison*
-
-
-
-*| Metric           | Random Forest |            SVM |*
-
-*| ---------------- | ------------: | -------------: |*
-
-*| Features         |            50 |             50 |*
-
-*| Training Samples |        50,000 |         10,000 |*
-
-*| Attack Traces    |        10,000 |         10,000 |*
-
-*| Accuracy         |        27.54% | Not calculated |*
-
-*| Best Key Rank    |         \*\*1\*\* |             67 |*
-
-*| Final Key Rank   |         \*\*1\*\* |            224 |*
-
-*| Success Rate     |     \*\*2.00%\*\* |          0.00% |*
-
-
-
-*## Important Results*
-
-
-
-*The strongest result was obtained using the tuned Random Forest model.*
-
-
-
-*The correct AES key byte \*\*224\*\* reached \*\*rank 1\*\* at 9,800 attack traces and remained at rank 1 at 10,000 traces.*
-
-
-
-*This indicates that, for this experiment, Random Forest provided a stronger key-ranking result than SVM.*
-
-
-
-*## Repository Structure*
-
-
-
-*```text*
-
-*HammingWeightLeakageAnalysis/*
-
-*│*
-
-*├── src/*
-
-*│   ├── train\_random\_forest.py*
-
-*│   ├── tune\_random\_forest.py*
-
-*│   ├── evaluate\_random\_forest.py*
-
-*│   ├── svm\_model.py*
-
-*│   ├── svm\_key\_ranking.py*
-
-*│   ├── svm\_success\_rate.py*
-
-*│   ├── snr.py*
-
-*│   ├── feature\_selection.py*
-
-*│   ├── guessing\_entropy.py*
-
-*│   └── ...*
-
-*│*
-
-*├── results/*
-
-*│   ├── final\_model\_comparison.txt*
-
-*│   ├── random\_forest\_tuning\_results.csv*
-
-*│   ├── key\_ranks.npy*
-
-*│   ├── success\_rate.npy*
-
-*│   ├── key\_scores\_plot.png*
-
-*│   ├── snr\_plot.png*
-
-*│   ├── feature\_importance.png*
-
-*│   ├── random\_forest\_confusion\_matrix.png*
-
-*│   ├── svm\_key\_ranking\_final.txt*
-
-*│   ├── svm\_success\_rate\_final.txt*
-
-*│   └── svm\_classification\_report.txt*
-
-*│*
-
-*├── README.md*
-
-*├── requirements.txt*
-
-*├── LICENSE*
-
-*└── .gitignore*
-
-*```*
-
-
-
-*## How to Run*
-
-
-
-*Create and activate a Python virtual environment:*
-
-
-
-*```bash*
-
-*python -m venv venv*
-
-*venv\\Scripts\\activate*
-
-*```*
-
-
-
-*Install dependencies:*
-
-
-
-*```bash*
-
-*pip install -r requirements.txt*
-
-*```*
-
-
-
-*Place the ASCAD dataset in the appropriate local dataset directory.*
-
-
-
-*Run the required preprocessing, feature-selection, training, and evaluation scripts from the `src/` directory.*
-
-
-
-*Example:*
-
-
-
-*```bash*
-
-*python src/train\_random\_forest.py*
-
-*python src/svm\_model.py*
-
-*python src/svm\_key\_ranking.py*
-
-*python src/svm\_success\_rate.py*
-
-*```*
-
-
-
-*## Notes*
-
-
-
-*The dataset and trained model files are not included in this repository because of their large size. They are excluded through `.gitignore`.*
-
-
-
-*## Technologies*
-
-
-
-*\* Python*
-
-*\* NumPy*
-
-*\* Pandas*
-
-*\* Scikit-learn*
-
-*\* Matplotlib*
-
-*\* Random Forest*
-
-*\* Support Vector Machine*
-
-*\* AES Side-Channel Analysis*
-
-*\* Hamming Weight Leakage Model*
-
-*\* SNR-based Feature Selection*
-
-
-
-*## License*
-
-
-
-*This project is provided for educational and research purposes.*
-
-
-
+```text
+Power Traces
+   ↓
+Machine Learning
+   ↓
+Hamming Weight
+   ↓
+Test 256 Keys
+   ↓
+Rank Keys
+   ↓
+Find Correct Key
+```
